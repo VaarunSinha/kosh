@@ -104,7 +104,10 @@ mod tests {
 
     #[test]
     fn test_key_name_valid() {
-        assert_eq!(KeyName::parse("OPENAI_API_KEY").unwrap().as_str(), "OPENAI_API_KEY");
+        assert_eq!(
+            KeyName::parse("OPENAI_API_KEY").unwrap().as_str(),
+            "OPENAI_API_KEY"
+        );
         assert_eq!(KeyName::parse("_PRIVATE").unwrap().as_str(), "_PRIVATE");
         assert_eq!(KeyName::parse("PORT2").unwrap().as_str(), "PORT2");
     }
@@ -119,12 +122,21 @@ mod tests {
 
     #[test]
     fn test_role_serde_roundtrip() {
-        for role in [Role::Owner, Role::Admin, Role::Developer, Role::Readonly, Role::Ci] {
+        for role in [
+            Role::Owner,
+            Role::Admin,
+            Role::Developer,
+            Role::Readonly,
+            Role::Ci,
+        ] {
             let json = serde_json::to_string(&role).unwrap();
             let back: Role = serde_json::from_str(&json).unwrap();
             assert_eq!(role, back);
         }
-        assert_eq!(serde_json::to_string(&Role::Readonly).unwrap(), "\"readonly\"");
+        assert_eq!(
+            serde_json::to_string(&Role::Readonly).unwrap(),
+            "\"readonly\""
+        );
     }
 
     #[test]

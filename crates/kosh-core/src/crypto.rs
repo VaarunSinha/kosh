@@ -25,6 +25,12 @@ impl SecretBytes {
     }
 }
 
+impl std::fmt::Debug for SecretBytes {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("SecretBytes").field(&"[redacted]").finish()
+    }
+}
+
 /// Generate a new age X25519 keypair for a workspace env key or user key.
 /// Returns (identity = private, recipient = public).
 pub fn generate_keypair() -> (Identity, Recipient) {
@@ -64,18 +70,17 @@ pub fn decrypt_with_identity(
     identity: &Identity,
     ref_id: &str,
 ) -> Result<SecretBytes, KoshError> {
-    let decryptor = match age::Decryptor::new(ciphertext).map_err(|_| {
-        KoshError::DecryptionFailed {
+    let decryptor =
+        match age::Decryptor::new(ciphertext).map_err(|_| KoshError::DecryptionFailed {
             ref_id: ref_id.to_string(),
-        }
-    })? {
-        age::Decryptor::Recipients(d) => d,
-        _ => {
-            return Err(KoshError::DecryptionFailed {
-                ref_id: ref_id.to_string(),
-            })
-        }
-    };
+        })? {
+            age::Decryptor::Recipients(d) => d,
+            _ => {
+                return Err(KoshError::DecryptionFailed {
+                    ref_id: ref_id.to_string(),
+                })
+            }
+        };
 
     let mut reader = decryptor
         .decrypt(std::iter::once(identity as &dyn age::Identity))
@@ -163,11 +168,10 @@ pub fn open(key: &[u8; 32], blob: &[u8], ref_id: &str) -> Result<SecretBytes, Ko
         });
     }
     let (nonce_bytes, ct) = blob.split_at(24);
-    let cipher = XChaCha20Poly1305::new_from_slice(key).map_err(|_| {
-        KoshError::DecryptionFailed {
+    let cipher =
+        XChaCha20Poly1305::new_from_slice(key).map_err(|_| KoshError::DecryptionFailed {
             ref_id: ref_id.to_string(),
-        }
-    })?;
+        })?;
     let nonce = XNonce::from_slice(nonce_bytes);
     let pt = cipher
         .decrypt(nonce, ct)

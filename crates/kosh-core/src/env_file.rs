@@ -22,10 +22,11 @@ enum EnvEntry {
 
 impl EnvFile {
     pub fn load(path: &Path) -> Result<Self, crate::error::KoshError> {
-        let content =
-            std::fs::read_to_string(path).map_err(|_| crate::error::KoshError::EnvFileNotReadable {
+        let content = std::fs::read_to_string(path).map_err(|_| {
+            crate::error::KoshError::EnvFileNotReadable {
                 path: path.display().to_string(),
-            })?;
+            }
+        })?;
 
         let entries = content
             .lines()
