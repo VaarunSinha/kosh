@@ -1,0 +1,27 @@
+[package]
+name = "kosh-cli"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[[bin]]
+name = "kosh"
+path = "src/main.rs"
+
+[dependencies]
+kosh-core = { path = "../kosh-core" }
+kosh-redactor = { path = "../kosh-redactor" }
+age = { workspace = true }
+clap = { workspace = true }
+tokio = { workspace = true }
+anyhow = { workspace = true }
+serde_json = { workspace = true }
+rpassword = { workspace = true }
+
+[dev-dependencies]
+assert_cmd = { workspace = true }
+predicates = { workspace = true }
+tempfile = { workspace = true }

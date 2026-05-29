@@ -2,6 +2,7 @@
 members = [
     "crates/kosh-core",
     "crates/kosh-redactor",
+    "crates/kosh-cli",
 ]
 resolver = "2"
 

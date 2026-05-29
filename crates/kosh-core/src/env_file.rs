@@ -100,6 +100,40 @@ impl EnvFile {
         }
     }
 
+    /// Set `key` to `value`, updating the entry in place if it exists or
+    /// appending a new `key=value` line otherwise. Used by `kosh add --key`
+    /// to introduce a not-yet-present variable before referencing it.
+    pub fn set_var(&mut self, key: &str, value: &str) {
+        for entry in &mut self.entries {
+            if let EnvEntry::Variable {
+                key: k,
+                value: v,
+                raw_line,
+            } = entry
+            {
+                if k == key {
+                    *v = value.to_string();
+                    *raw_line = format!("{}={}", k, value);
+                    return;
+                }
+            }
+        }
+        self.entries.push(EnvEntry::Variable {
+            key: key.to_string(),
+            value: value.to_string(),
+            raw_line: format!("{}={}", key, value),
+        });
+    }
+
+    /// Remove the variable named `key`, if present. Comments and blanks are
+    /// untouched. Returns true if an entry was removed.
+    pub fn remove_var(&mut self, key: &str) -> bool {
+        let before = self.entries.len();
+        self.entries
+            .retain(|e| !matches!(e, EnvEntry::Variable { key: k, .. } if k == key));
+        self.entries.len() != before
+    }
+
     /// Write the file back to disk, preserving all comments and blank lines
     pub fn save(&self) -> Result<(), crate::error::KoshError> {
         let content: String = self
@@ -166,6 +200,34 @@ mod tests {
         let refs = env.references();
         assert!(refs.contains_key("OPENAI"));
         assert!(!refs.contains_key("PLAIN"));
+    }
+
+    #[test]
+    fn test_set_var_updates_existing_and_appends_new() {
+        let f = write_temp_env("EXISTING=old\n");
+        let mut env = EnvFile::load(f.path()).unwrap();
+        env.set_var("EXISTING", "new");
+        env.set_var("FRESH", "value");
+        env.save().unwrap();
+
+        let reloaded = EnvFile::load(f.path()).unwrap();
+        let vars = reloaded.variables();
+        assert_eq!(vars["EXISTING"], "new");
+        assert_eq!(vars["FRESH"], "value");
+    }
+
+    #[test]
+    fn test_remove_var() {
+        let f = write_temp_env("A=1\nB=2\n");
+        let mut env = EnvFile::load(f.path()).unwrap();
+        assert!(env.remove_var("A"));
+        assert!(!env.remove_var("MISSING"));
+        env.save().unwrap();
+
+        let reloaded = EnvFile::load(f.path()).unwrap();
+        let vars = reloaded.variables();
+        assert!(!vars.contains_key("A"));
+        assert!(vars.contains_key("B"));
     }
 
     #[test]
