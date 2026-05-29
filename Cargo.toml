@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "crates/kosh-core",
+    "crates/kosh-redactor",
 ]
 resolver = "2"
 
@@ -13,6 +14,8 @@ repository   = "https://github.com/yourusername/kosh"
 rust-version = "1.75"
 
 [workspace.dependencies]
+# Async
+tokio        = { version = "1", features = ["full"] }
 # Error handling
 anyhow       = "1"
 thiserror    = "1"
@@ -39,6 +42,15 @@ dotenvy      = "0.15"
 uuid         = { version = "1", features = ["v4", "serde"] }
 # Hex (used by reference.rs)
 hex          = "0.4"
+# Redactor
+aho-corasick = "1"
+# CLI
+clap         = { version = "4", features = ["derive"] }
+rpassword    = "7"
+# Dev / test
+tempfile     = "3"
+assert_cmd   = "2"
+predicates   = "3"
 
 [profile.release]
 opt-level     = 3
