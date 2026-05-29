@@ -5,6 +5,7 @@
 //! secrets and plaintext env private keys never reach the server.
 
 pub mod config;
+pub mod db;
 pub mod error;
 
 use axum::{routing::get, Router};
