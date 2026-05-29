@@ -1,0 +1,34 @@
+[package]
+name    = "kosh-server"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name = "kosh-server"
+path = "src/main.rs"
+
+[lib]
+name = "kosh_server"
+path = "src/lib.rs"
+
+[dependencies]
+kosh-core    = { path = "../kosh-core" }
+tokio.workspace        = true
+axum.workspace         = true
+tower.workspace        = true
+tower-http.workspace   = true
+sqlx.workspace         = true
+jsonwebtoken.workspace = true
+serde.workspace        = true
+serde_json.workspace   = true
+anyhow.workspace       = true
+thiserror.workspace    = true
+chrono.workspace       = true
+uuid.workspace         = true
+base64.workspace       = true
+tracing.workspace      = true
+tracing-subscriber.workspace = true
+
+[dev-dependencies]
+testcontainers-modules.workspace = true
+reqwest.workspace = true

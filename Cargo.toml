@@ -3,6 +3,7 @@ members = [
     "crates/kosh-core",
     "crates/kosh-redactor",
     "crates/kosh-cli",
+    "crates/kosh-server",
 ]
 resolver = "2"
 
@@ -48,10 +49,22 @@ aho-corasick = "1"
 # CLI
 clap         = { version = "4", features = ["derive"] }
 rpassword    = "7"
+# Server (HTTP, DB, auth)
+axum         = "0.8"
+tower        = "0.5"
+tower-http   = { version = "0.6", features = ["trace"] }
+sqlx         = { version = "0.8", default-features = false, features = ["runtime-tokio", "tls-rustls", "postgres", "uuid", "chrono", "migrate"] }
+jsonwebtoken = "9"
+chrono       = { version = "0.4", features = ["serde"] }
+base64       = "0.22"
+tracing      = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 # Dev / test
 tempfile     = "3"
 assert_cmd   = "2"
 predicates   = "3"
+testcontainers-modules = { version = "0.15", features = ["postgres"] }
+reqwest      = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
 
 [profile.release]
 opt-level     = 3
