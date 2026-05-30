@@ -28,6 +28,12 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON
 -- user can always read their own membership rows across workspaces (needed to
 -- list "my workspaces"); within a scoped workspace they additionally see all
 -- member rows for that workspace.
+--
+-- NOTE on `NULLIF(..., '')`: a pooled connection that has *ever* executed
+-- `SET LOCAL app.workspace_id` thereafter reports the *empty string* (not NULL)
+-- from `current_setting(name, true)` once the setting reverts. `''::uuid` would
+-- raise an error, so every read of these GUCs is wrapped in `NULLIF(_, '')` to
+-- coerce both "never set" and "reverted" back to NULL -> fail closed.
 
 ALTER TABLE environments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE members      ENABLE ROW LEVEL SECURITY;
@@ -36,23 +42,23 @@ ALTER TABLE env_keys     ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY workspace_isolation ON environments
     FOR ALL
-    USING (workspace_id = current_setting('app.workspace_id', true)::uuid)
-    WITH CHECK (workspace_id = current_setting('app.workspace_id', true)::uuid);
+    USING (workspace_id = NULLIF(current_setting('app.workspace_id', true), '')::uuid)
+    WITH CHECK (workspace_id = NULLIF(current_setting('app.workspace_id', true), '')::uuid);
 
 CREATE POLICY workspace_isolation ON secrets
     FOR ALL
-    USING (workspace_id = current_setting('app.workspace_id', true)::uuid)
-    WITH CHECK (workspace_id = current_setting('app.workspace_id', true)::uuid);
+    USING (workspace_id = NULLIF(current_setting('app.workspace_id', true), '')::uuid)
+    WITH CHECK (workspace_id = NULLIF(current_setting('app.workspace_id', true), '')::uuid);
 
 CREATE POLICY workspace_isolation ON env_keys
     FOR ALL
-    USING (workspace_id = current_setting('app.workspace_id', true)::uuid)
-    WITH CHECK (workspace_id = current_setting('app.workspace_id', true)::uuid);
+    USING (workspace_id = NULLIF(current_setting('app.workspace_id', true), '')::uuid)
+    WITH CHECK (workspace_id = NULLIF(current_setting('app.workspace_id', true), '')::uuid);
 
 CREATE POLICY member_visibility ON members
     FOR ALL
     USING (
-        workspace_id = current_setting('app.workspace_id', true)::uuid
-        OR user_id = current_setting('app.user_id', true)::uuid
+        workspace_id = NULLIF(current_setting('app.workspace_id', true), '')::uuid
+        OR user_id = NULLIF(current_setting('app.user_id', true), '')::uuid
     )
-    WITH CHECK (workspace_id = current_setting('app.workspace_id', true)::uuid);
+    WITH CHECK (workspace_id = NULLIF(current_setting('app.workspace_id', true), '')::uuid);

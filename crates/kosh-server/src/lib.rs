@@ -11,7 +11,7 @@ pub mod error;
 pub mod middleware;
 
 use axum::{
-    routing::{get, post},
+    routing::{delete, get, post},
     Router,
 };
 use sqlx::{PgPool, Postgres, Transaction};
@@ -52,6 +52,21 @@ impl AppState {
             .await?;
         Ok(tx)
     }
+
+    /// Begin a transaction scoped to a user but not a single workspace.
+    ///
+    /// Sets only `app.user_id`, which lets the caller read their own membership
+    /// rows across workspaces (the `members` RLS policy allows `user_id =
+    /// app.user_id`). Used by the non-scoped workspace-collection routes
+    /// (list/create), where there is no single `app.workspace_id`.
+    pub async fn user_tx(&self, user_id: Uuid) -> Result<Transaction<'_, Postgres>, sqlx::Error> {
+        let mut tx = self.pool.begin().await?;
+        sqlx::query("SELECT set_config('app.user_id', $1, true)")
+            .bind(user_id.to_string())
+            .execute(&mut *tx)
+            .await?;
+        Ok(tx)
+    }
 }
 
 /// Liveness probe. Used by load balancers and the test harness.
@@ -61,14 +76,41 @@ async fn health() -> &'static str {
 
 /// Build the application router.
 ///
-/// `/health` is public; the `/auth/*` routes sit behind the Bearer-token
-/// authentication middleware. Workspace/secret/team routes are mounted in later
-/// milestones.
+/// `/health` is public. Everything else requires a valid Bearer token
+/// (`require_auth`). Workspace-scoped routes additionally pass through
+/// `require_workspace`, which proves membership and injects the caller's role.
+/// Layering order is: `require_auth` (outermost) → `require_workspace` →
+/// handler, so the membership check always sees an authenticated user.
 pub fn app(state: AppState) -> Router {
+    // Workspace-scoped routes: auth + membership.
+    let scoped = Router::new()
+        .route(
+            "/workspaces/{workspace_id}",
+            get(api::workspaces::get).delete(api::workspaces::delete),
+        )
+        .route(
+            "/workspaces/{workspace_id}/environments",
+            get(api::workspaces::list_envs).post(api::workspaces::create_env),
+        )
+        .route(
+            "/workspaces/{workspace_id}/environments/{environment_id}",
+            delete(api::workspaces::delete_env),
+        )
+        .route_layer(axum::middleware::from_fn_with_state(
+            state.clone(),
+            middleware::require_workspace,
+        ));
+
+    // Collection + auth routes: auth only.
     let protected = Router::new()
+        .route(
+            "/workspaces",
+            get(api::workspaces::list).post(api::workspaces::create),
+        )
         .route("/auth/refresh", post(api::auth::refresh_token))
         .route("/auth/logout", post(api::auth::logout))
-        .layer(axum::middleware::from_fn_with_state(
+        .merge(scoped)
+        .route_layer(axum::middleware::from_fn_with_state(
             state.clone(),
             middleware::require_auth,
         ));
