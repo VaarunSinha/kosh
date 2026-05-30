@@ -96,6 +96,24 @@ pub fn app(state: AppState) -> Router {
             "/workspaces/{workspace_id}/environments/{environment_id}",
             delete(api::workspaces::delete_env),
         )
+        .route(
+            "/workspaces/{workspace_id}/environments/{environment_id}/secrets",
+            get(api::secrets::list_secrets).post(api::secrets::upload_secret),
+        )
+        .route(
+            "/workspaces/{workspace_id}/environments/{environment_id}/secrets/{ref_id}",
+            get(api::secrets::download_secret)
+                .put(api::secrets::update_secret)
+                .delete(api::secrets::delete_secret),
+        )
+        .route(
+            "/workspaces/{workspace_id}/environments/{environment_id}/secrets/{ref_id}/rotate",
+            post(api::secrets::flag_rotation),
+        )
+        .route(
+            "/workspaces/{workspace_id}/rotations",
+            get(api::secrets::list_rotation_due),
+        )
         .route_layer(axum::middleware::from_fn_with_state(
             state.clone(),
             middleware::require_workspace,
