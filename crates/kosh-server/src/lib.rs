@@ -11,7 +11,7 @@ pub mod error;
 pub mod middleware;
 
 use axum::{
-    routing::{delete, get, post},
+    routing::{delete, get, post, put},
     Router,
 };
 use sqlx::{PgPool, Postgres, Transaction};
@@ -114,6 +114,19 @@ pub fn app(state: AppState) -> Router {
             "/workspaces/{workspace_id}/rotations",
             get(api::secrets::list_rotation_due),
         )
+        .route(
+            "/workspaces/{workspace_id}/members",
+            get(api::team::list_members).post(api::team::invite_member),
+        )
+        .route(
+            "/workspaces/{workspace_id}/members/{member_user_id}",
+            put(api::team::update_member_role).delete(api::team::remove_member),
+        )
+        .route(
+            "/workspaces/{workspace_id}/environments/{environment_id}/keys/{member_user_id}",
+            get(api::team::get_env_key).put(api::team::upload_env_key),
+        )
+        .route("/workspaces/{workspace_id}/audit", get(api::audit::list))
         .route_layer(axum::middleware::from_fn_with_state(
             state.clone(),
             middleware::require_workspace,
@@ -127,6 +140,11 @@ pub fn app(state: AppState) -> Router {
         )
         .route("/auth/refresh", post(api::auth::refresh_token))
         .route("/auth/logout", post(api::auth::logout))
+        .route("/users/me/public-key", put(api::team::upload_public_key))
+        .route(
+            "/users/{user_id}/public-key",
+            get(api::team::get_public_key),
+        )
         .merge(scoped)
         .route_layer(axum::middleware::from_fn_with_state(
             state.clone(),
