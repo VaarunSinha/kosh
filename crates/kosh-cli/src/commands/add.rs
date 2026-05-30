@@ -1,4 +1,4 @@
-use super::{env_path, user_recipient, Context};
+use super::{env_path, recipient_for, Context};
 use anyhow::bail;
 use kosh_core::env_file::EnvFile;
 use kosh_core::keychain::Keychain;
@@ -21,15 +21,15 @@ pub struct Args {
     dry_run: bool,
 }
 
-pub fn run(_ctx: &Context, args: Args) -> anyhow::Result<()> {
+pub fn run(ctx: &Context, args: Args) -> anyhow::Result<()> {
     match (args.file, args.key) {
-        (Some(file), _) => add_from_file(&file, args.dry_run),
-        (None, Some(key)) => add_single(&key, args.dry_run),
+        (Some(file), _) => add_from_file(ctx, &file, args.dry_run),
+        (None, Some(key)) => add_single(ctx, &key, args.dry_run),
         (None, None) => bail!("specify --file <path> to import or --key <NAME> to add one secret"),
     }
 }
 
-fn add_from_file(file: &Path, dry_run: bool) -> anyhow::Result<()> {
+fn add_from_file(ctx: &Context, file: &Path, dry_run: bool) -> anyhow::Result<()> {
     let mut env = EnvFile::load(file)?;
     let plain: Vec<(String, String)> = env.plain_secrets().into_iter().collect();
 
@@ -47,7 +47,7 @@ fn add_from_file(file: &Path, dry_run: bool) -> anyhow::Result<()> {
     }
 
     let kc = Keychain::new();
-    let recipient = user_recipient(&kc)?;
+    let recipient = recipient_for(ctx, &kc)?;
     let store = Store::new(&kc);
     for (k, v) in plain {
         let ref_id = store.add_secret(&mut env, &k, v.as_bytes(), &recipient)?;
@@ -56,14 +56,14 @@ fn add_from_file(file: &Path, dry_run: bool) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn add_single(key: &str, dry_run: bool) -> anyhow::Result<()> {
+fn add_single(ctx: &Context, key: &str, dry_run: bool) -> anyhow::Result<()> {
     if dry_run {
         println!("{} -> {}", key, RefId::generate());
         return Ok(());
     }
 
     let kc = Keychain::new();
-    let recipient = user_recipient(&kc)?;
+    let recipient = recipient_for(ctx, &kc)?;
     let value = rpassword::prompt_password(format!("Enter value for {key}: "))?;
 
     let path = env_path();

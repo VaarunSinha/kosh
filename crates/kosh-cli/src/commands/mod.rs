@@ -58,8 +58,21 @@ pub fn user_identity(kc: &Keychain) -> anyhow::Result<Identity> {
     Ok(crypto::identity_from_string(&s)?)
 }
 
-/// The local user's age recipient (public key) — the recipient every locally
-/// added secret is encrypted to.
-pub fn user_recipient(kc: &Keychain) -> anyhow::Result<Recipient> {
-    Ok(user_identity(kc)?.to_public())
+/// The age identity that secrets for `(ctx.workspace, ctx.env)` are encrypted
+/// under. In **team mode** a per-env key exists locally (provisioned by
+/// `kosh sync`) and is used; in **solo mode** none exists and we fall back to
+/// the user's own identity. Solo behaviour is therefore byte-identical to
+/// before per-env keys existed.
+pub fn identity_for(ctx: &Context, kc: &Keychain) -> anyhow::Result<Identity> {
+    match kc.get_env_key(&ctx.workspace, &ctx.env)? {
+        Some(s) => Ok(crypto::identity_from_string(&s)?),
+        None => user_identity(kc),
+    }
+}
+
+/// The age recipient (public key) that secrets for `(ctx.workspace, ctx.env)`
+/// are encrypted to: the env recipient in team mode, the user recipient in solo
+/// mode. See [`identity_for`].
+pub fn recipient_for(ctx: &Context, kc: &Keychain) -> anyhow::Result<Recipient> {
+    Ok(identity_for(ctx, kc)?.to_public())
 }

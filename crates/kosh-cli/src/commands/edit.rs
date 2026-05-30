@@ -1,4 +1,4 @@
-use super::{env_path, user_recipient, Context};
+use super::{env_path, recipient_for, Context};
 use anyhow::anyhow;
 use kosh_core::crypto::{self, SecretBytes};
 use kosh_core::env_file::EnvFile;
@@ -10,7 +10,7 @@ pub struct Args {
     key: String,
 }
 
-pub fn run(_ctx: &Context, args: Args) -> anyhow::Result<()> {
+pub fn run(ctx: &Context, args: Args) -> anyhow::Result<()> {
     let env = EnvFile::load(&env_path())?;
     let ref_id = env
         .references()
@@ -19,7 +19,7 @@ pub fn run(_ctx: &Context, args: Args) -> anyhow::Result<()> {
         .ok_or_else(|| anyhow!("no secret found for key `{}`", args.key))?;
 
     let kc = Keychain::new();
-    let recipient = user_recipient(&kc)?;
+    let recipient = recipient_for(ctx, &kc)?;
     let value = rpassword::prompt_password(format!("New value for {}: ", args.key))?;
 
     let blob = crypto::encrypt_for_recipient(&SecretBytes::new(value.into_bytes()), &recipient)?;

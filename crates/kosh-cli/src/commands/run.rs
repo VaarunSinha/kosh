@@ -1,4 +1,4 @@
-use super::{env_path, user_identity, Context};
+use super::{env_path, identity_for, Context};
 use anyhow::{anyhow, bail};
 use kosh_core::env_file::EnvFile;
 use kosh_core::error::KoshError;
@@ -36,7 +36,7 @@ pub async fn run(ctx: &Context, args: Args) -> anyhow::Result<()> {
         let refs = envf.references();
         if !refs.is_empty() {
             let kc = Keychain::new();
-            let identity = user_identity(&kc)?;
+            let identity = identity_for(ctx, &kc)?;
             let store = Store::new(&kc);
             for (key, ref_id) in refs {
                 let pt = store.get_secret(&ref_id, &identity, &ctx.env)?;
