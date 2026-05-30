@@ -10,6 +10,7 @@ pub mod run;
 pub mod server;
 pub mod status;
 pub mod sync;
+pub mod team;
 
 use anyhow::anyhow;
 use kosh_core::config::Config;

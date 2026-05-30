@@ -67,7 +67,7 @@ pub async fn run(ctx: &Context, args: Args) -> anyhow::Result<()> {
 }
 
 /// Find the workspace by name, creating it if the caller has none by that name.
-async fn resolve_workspace(client: &ServerClient, name: &str) -> anyhow::Result<Uuid> {
+pub(crate) async fn resolve_workspace(client: &ServerClient, name: &str) -> anyhow::Result<Uuid> {
     if let Some(w) = client
         .list_workspaces()
         .await?
@@ -80,7 +80,11 @@ async fn resolve_workspace(client: &ServerClient, name: &str) -> anyhow::Result<
 }
 
 /// Find the environment by name within a workspace, creating it if absent.
-async fn resolve_env(client: &ServerClient, ws: Uuid, name: &str) -> anyhow::Result<Uuid> {
+pub(crate) async fn resolve_env(
+    client: &ServerClient,
+    ws: Uuid,
+    name: &str,
+) -> anyhow::Result<Uuid> {
     if let Some(e) = client
         .list_envs(ws)
         .await?

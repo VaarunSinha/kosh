@@ -5,10 +5,6 @@
 //! server is zero-knowledge: this client uploads only ciphertext (secret blobs,
 //! wrapped env keys) and public keys, and decrypts strictly locally.
 
-// Several client methods are wired up across later milestones (sync, team).
-// TODO: drop once every method has a caller.
-#![allow(dead_code)]
-
 use anyhow::{anyhow, Context as _};
 use base64::Engine as _;
 use kosh_core::config::Config;
@@ -24,8 +20,6 @@ use uuid::Uuid;
 pub struct WorkspaceDto {
     pub id: Uuid,
     pub name: String,
-    pub owner_id: Uuid,
-    pub role: String,
 }
 
 /// An environment as returned by the server.
@@ -39,7 +33,6 @@ pub struct EnvDto {
 #[derive(Debug, Deserialize)]
 pub struct SecretMetaDto {
     pub ref_id: String,
-    pub key_name: String,
 }
 
 /// Secret download including the base64 ciphertext.
@@ -60,14 +53,12 @@ pub struct MemberDto {
 /// A member's wrapped env key (base64 ciphertext).
 #[derive(Debug, Deserialize)]
 pub struct EnvKeyDto {
-    pub member_user_id: Uuid,
     pub encrypted_env_key: String,
 }
 
 /// A user's published public key (base64).
 #[derive(Debug, Deserialize)]
 pub struct PublicKeyDto {
-    pub user_id: Uuid,
     pub public_key: String,
 }
 
@@ -278,18 +269,6 @@ impl ServerClient {
             )))
             .bearer_auth(&self.token)
             .json(&json!({ "encrypted_blob": blob_b64 }))
-            .send()
-            .await?;
-        expect_success(resp).await
-    }
-
-    pub async fn delete_secret(&self, ws: Uuid, env: Uuid, ref_id: &str) -> anyhow::Result<()> {
-        let resp = self
-            .http
-            .delete(self.url(&format!(
-                "/workspaces/{ws}/environments/{env}/secrets/{ref_id}"
-            )))
-            .bearer_auth(&self.token)
             .send()
             .await?;
         expect_success(resp).await

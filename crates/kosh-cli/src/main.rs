@@ -45,6 +45,8 @@ enum Commands {
     Rotate(commands::rotate::Args),
     /// Sync secrets with server
     Sync(commands::sync::Args),
+    /// Manage workspace members and env-key sharing
+    Team(commands::team::Args),
     /// Manage local Kosh server
     Server(commands::server::Args),
     /// Login to Kosh server
@@ -70,6 +72,7 @@ async fn main() {
         Commands::Delete(a) => commands::delete::run(&ctx, a),
         Commands::Rotate(a) => commands::rotate::run(&ctx, a),
         Commands::Sync(a) => commands::sync::run(&ctx, a).await,
+        Commands::Team(a) => commands::team::run(&ctx, a).await,
         Commands::Server(a) => commands::server::run(&ctx, a),
         Commands::Login(a) => commands::login::run(&ctx, a).await,
         Commands::Logout => commands::logout::run(&ctx).await,
