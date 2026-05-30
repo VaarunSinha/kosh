@@ -69,7 +69,7 @@ async fn main() {
         Commands::Edit(a) => commands::edit::run(&ctx, a),
         Commands::Delete(a) => commands::delete::run(&ctx, a),
         Commands::Rotate(a) => commands::rotate::run(&ctx, a),
-        Commands::Sync(a) => commands::sync::run(&ctx, a),
+        Commands::Sync(a) => commands::sync::run(&ctx, a).await,
         Commands::Server(a) => commands::server::run(&ctx, a),
         Commands::Login(a) => commands::login::run(&ctx, a).await,
         Commands::Logout => commands::logout::run(&ctx).await,

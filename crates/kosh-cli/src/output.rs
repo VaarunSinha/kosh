@@ -20,6 +20,22 @@ pub fn list(json: bool, refs: &[(String, RefId)]) {
     }
 }
 
+/// Print the outcome of a `kosh sync` (counts only — never secret values).
+pub fn sync_result(json: bool, pushed: usize, pulled: usize) {
+    if json {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&serde_json::json!({
+                "pushed": pushed,
+                "pulled": pulled,
+            }))
+            .unwrap()
+        );
+    } else {
+        println!("Synced: {pushed} pushed, {pulled} pulled");
+    }
+}
+
 /// Print a status summary.
 pub fn status(json: bool, workspace: &str, env: &str, key_present: bool) {
     if json {

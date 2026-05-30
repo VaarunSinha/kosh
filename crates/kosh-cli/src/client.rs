@@ -10,6 +10,7 @@
 #![allow(dead_code)]
 
 use anyhow::{anyhow, Context as _};
+use base64::Engine as _;
 use kosh_core::config::Config;
 use kosh_core::keychain::Keychain;
 use reqwest::{Response, StatusCode};
@@ -114,6 +115,26 @@ impl ServerClient {
 
     fn url(&self, path: &str) -> String {
         format!("{}{}", self.base_url, path)
+    }
+
+    /// The caller's own user id, read from the JWT `sub` claim. The signature is
+    /// not verified here — the server is the authority; we only need to know
+    /// which member row (`/keys/{me}`) is ours. Errors if the token is malformed.
+    pub fn user_id(&self) -> anyhow::Result<Uuid> {
+        let payload = self
+            .token
+            .split('.')
+            .nth(1)
+            .ok_or_else(|| anyhow!("malformed token: missing payload segment"))?;
+        let bytes = base64::engine::general_purpose::URL_SAFE_NO_PAD
+            .decode(payload)
+            .context("decoding token payload")?;
+        #[derive(Deserialize)]
+        struct Sub {
+            sub: Uuid,
+        }
+        let claims: Sub = serde_json::from_slice(&bytes).context("parsing token claims")?;
+        Ok(claims.sub)
     }
 
     // ---- auth -------------------------------------------------------------
