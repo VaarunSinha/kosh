@@ -1,3 +1,4 @@
+mod client;
 mod commands;
 mod output;
 
@@ -47,7 +48,9 @@ enum Commands {
     /// Manage local Kosh server
     Server(commands::server::Args),
     /// Login to Kosh server
-    Login,
+    Login(commands::login::Args),
+    /// Log out of the Kosh server
+    Logout,
     /// Show current status
     Status,
     /// Initialize Kosh in current directory
@@ -68,7 +71,8 @@ async fn main() {
         Commands::Rotate(a) => commands::rotate::run(&ctx, a),
         Commands::Sync(a) => commands::sync::run(&ctx, a),
         Commands::Server(a) => commands::server::run(&ctx, a),
-        Commands::Login => commands::login::run(&ctx),
+        Commands::Login(a) => commands::login::run(&ctx, a).await,
+        Commands::Logout => commands::logout::run(&ctx).await,
         Commands::Status => commands::status::run(&ctx),
         Commands::Init => commands::init::run(&ctx),
     };

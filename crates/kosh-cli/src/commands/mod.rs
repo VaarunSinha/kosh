@@ -4,6 +4,7 @@ pub mod edit;
 pub mod init;
 pub mod list;
 pub mod login;
+pub mod logout;
 pub mod rotate;
 pub mod run;
 pub mod server;

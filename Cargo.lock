@@ -2140,14 +2140,20 @@ dependencies = [
  "age",
  "anyhow",
  "assert_cmd",
+ "base64 0.22.1",
  "clap",
  "kosh-core",
  "kosh-redactor",
+ "kosh-server",
  "predicates",
+ "reqwest",
  "rpassword",
+ "serde",
  "serde_json",
  "tempfile",
+ "testcontainers-modules",
  "tokio",
+ "uuid",
 ]
 
 [[package]]

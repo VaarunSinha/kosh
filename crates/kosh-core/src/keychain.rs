@@ -6,6 +6,7 @@ use std::sync::Mutex;
 
 const DEFAULT_SERVICE: &str = "kosh";
 const USER_KEY_ACCOUNT: &str = "user/private_key";
+const SERVER_TOKEN_ACCOUNT: &str = "server/token";
 
 /// Abstraction over the OS keychain (Secure Enclave / TPM / libsecret) via the
 /// `keyring` crate. Secret bytes are hex-encoded for storage since keyring 2.x
@@ -97,6 +98,24 @@ impl Keychain {
     pub fn get_user_key(&self) -> Result<String, KoshError> {
         self.with_entry(USER_KEY_ACCOUNT, |e| e.get_password())
             .map_err(|e| KoshError::KeychainUnavailable(e.to_string()))
+    }
+
+    /// Store the access token issued by a Kosh server (for `kosh login`).
+    pub fn store_server_token(&self, token: &str) -> Result<(), KoshError> {
+        self.with_entry(SERVER_TOKEN_ACCOUNT, |e| e.set_password(token))
+            .map_err(|e| KoshError::KeychainWriteFailed(e.to_string()))
+    }
+
+    /// Retrieve the stored server access token.
+    pub fn get_server_token(&self) -> Result<String, KoshError> {
+        self.with_entry(SERVER_TOKEN_ACCOUNT, |e| e.get_password())
+            .map_err(|e| KoshError::KeychainUnavailable(e.to_string()))
+    }
+
+    /// Remove the stored server access token (for `kosh logout`).
+    pub fn delete_server_token(&self) -> Result<(), KoshError> {
+        self.with_entry(SERVER_TOKEN_ACCOUNT, |e| e.delete_password())
+            .map_err(|e| KoshError::KeychainWriteFailed(e.to_string()))
     }
 }
 
