@@ -23,8 +23,9 @@ pub struct Args {
 
     /// Disable real-time output redaction.
     /// Secret values will appear in stdout/stderr as-is.
-    #[arg(long = "no-redact")]
-    no_redact: bool,
+    /// Must be run via sudo.
+    #[arg(long = "dangerously-turn-off-redact")]
+    dangerously_turn_off_redact: bool,
 }
 
 pub async fn run(ctx: &Context, args: Args) -> anyhow::Result<()> {
@@ -63,7 +64,11 @@ pub async fn run(ctx: &Context, args: Args) -> anyhow::Result<()> {
         }
     }
 
-    let redactor = if args.no_redact {
+    if args.dangerously_turn_off_redact {
+        require_sudo()?;
+    }
+
+    let redactor = if args.dangerously_turn_off_redact {
         None
     } else {
         Some(Arc::new(
@@ -131,7 +136,7 @@ fn require_sudo() -> anyhow::Result<()> {
         return Ok(());
     }
     anyhow::bail!(
-        "--dangerously-allow-blocked requires sudo:\n  \
-         sudo kosh run --dangerously-allow-blocked -- <command>"
+        "this flag requires sudo:\n  \
+         sudo kosh run <dangerous-flags> -- <command>"
     )
 }
