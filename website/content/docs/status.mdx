@@ -1,0 +1,30 @@
+---
+title: kosh status
+description: Show current workspace, environment, and key status.
+---
+
+## Overview
+
+`kosh status` gives you a snapshot of the active configuration, workspace, environment, key presence, and server connection state.
+
+## Usage
+
+```bash
+kosh status
+```
+
+## Example output
+
+```
+Workspace:   default
+Environment: production
+User key:    present
+Server:      https://kosh.example.com (authenticated)
+Secrets:     3 managed
+```
+
+## Notes
+
+- If no user key is found, run `kosh init` first.
+- If the server shows `unauthenticated`, run `kosh login`.
+- Use `kosh status` to confirm which workspace and environment are active before running other commands.

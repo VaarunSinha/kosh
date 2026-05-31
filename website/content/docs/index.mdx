@@ -1,0 +1,65 @@
+---
+title: Introduction
+description: Kosh is a local-first encrypted secret vault for developers and teams.
+---
+
+## What is Kosh?
+
+**Kosh** (Sanskrit: *कोष*, Koṣa, treasury) is a command-line tool that encrypts your `.env` secrets locally, redacts them from terminal output, and syncs them securely across your team.
+
+Your secrets never touch disk in plaintext. When you run a command through Kosh, it injects decrypted values into the child process environment and scrubs them from all output.
+
+## How it works
+
+```
+kosh init               # generate user key + write config
+kosh add --file .env    # encrypt secrets, store references
+kosh run -- node app.js # inject + auto-redact
+kosh sync --push        # share encrypted secrets with team
+```
+
+## Install
+
+```bash
+cargo install kosh
+```
+
+Or install the Claude Code skill:
+
+```bash
+npx skills add VaarunSinha/kosh
+```
+
+## Architecture
+
+| Component | Purpose |
+|-----------|---------|
+| `kosh-core` | Crypto primitives, env parsing, vault logic |
+| `kosh-redactor` | Output stream scrubbing |
+| `kosh-cli` | CLI interface (clap) |
+| `kosh-server` | Optional team sync server |
+
+## Encryption
+
+| Algorithm | Role |
+|-----------|------|
+| X25519 | Key exchange |
+| XChaCha20-Poly1305 | Authenticated encryption (AEAD) |
+| Argon2id | Key derivation (KDF) |
+| BLAKE3 | Hashing |
+
+## Global flags
+
+These flags work across all commands:
+
+| Flag | Short | Description |
+|------|-------|-------------|
+| `--workspace <NAME>` | `-w` | Override the active workspace |
+| `--env <NAME>` | `-e` | Override the active environment |
+| `--json` | | Output in JSON format |
+
+## Next steps
+
+- [kosh init](/docs/init), set up your machine
+- [kosh add](/docs/add), encrypt your first secret
+- [kosh run](/docs/run), run a command with injected secrets

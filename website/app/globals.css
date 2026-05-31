@@ -1,0 +1,104 @@
+@import "tailwindcss";
+@import "fumadocs-ui/style.css";
+
+/* ── Light mode (Forest Treasury, light variant) ─────────────────── */
+:root {
+  --background: #f5f0e8;
+  --surface: #ede7d9;
+  --accent: #a07830;
+  --text: #1a2f28;
+  --text-muted: #4a6b5c;
+  --border: #d4cec0;
+  --icon-filter: brightness(0) saturate(100%) invert(13%) sepia(30%) saturate(600%) hue-rotate(115deg) brightness(85%);
+
+  /* Fumadocs overrides, light */
+  --color-fd-background: #f5f0e8;
+  --color-fd-foreground: #1a2f28;
+  --color-fd-muted: #ede7d9;
+  --color-fd-muted-foreground: #4a6b5c;
+  --color-fd-popover: #f0ebe2;
+  --color-fd-popover-foreground: #1a2f28;
+  --color-fd-card: #ede7d9;
+  --color-fd-card-foreground: #1a2f28;
+  --color-fd-border: rgba(180, 170, 150, 0.6);
+  --color-fd-primary: #a07830;
+  --color-fd-primary-foreground: #f5f0e8;
+  --color-fd-secondary: #ede7d9;
+  --color-fd-secondary-foreground: #1a2f28;
+  --color-fd-accent: rgba(160, 120, 48, 0.12);
+  --color-fd-accent-foreground: #a07830;
+  --color-fd-ring: #a07830;
+  --color-fd-overlay: rgba(0, 0, 0, 0.15);
+}
+
+/* ── Dark mode (Forest Treasury, dark) ───────────────────────────── */
+.dark {
+  --background: #0f1f1a;
+  --surface: #1a2f28;
+  --accent: #c8a45a;
+  --text: #f2ede3;
+  --text-muted: #8a9e96;
+  --border: #243d34;
+  --icon-filter: invert(65%) sepia(40%) saturate(500%) hue-rotate(5deg) brightness(100%) contrast(90%);
+
+  /* Fumadocs overrides, dark */
+  --color-fd-background: #0f1f1a;
+  --color-fd-foreground: #f2ede3;
+  --color-fd-muted: #1a2f28;
+  --color-fd-muted-foreground: #8a9e96;
+  --color-fd-popover: #182820;
+  --color-fd-popover-foreground: #f2ede3;
+  --color-fd-card: #1a2f28;
+  --color-fd-card-foreground: #f2ede3;
+  --color-fd-border: rgba(36, 61, 52, 0.8);
+  --color-fd-primary: #c8a45a;
+  --color-fd-primary-foreground: #0f1f1a;
+  --color-fd-secondary: #1a2f28;
+  --color-fd-secondary-foreground: #f2ede3;
+  --color-fd-accent: rgba(200, 164, 90, 0.12);
+  --color-fd-accent-foreground: #c8a45a;
+  --color-fd-ring: #c8a45a;
+  --color-fd-overlay: rgba(0, 0, 0, 0.5);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--text);
+  --color-accent: var(--accent);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
+  --color-muted: var(--text-muted);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--text);
+  transition: background-color 0.2s, color 0.2s;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--background);
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--surface); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+.install-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  max-width: 580px;
+  margin: 0 auto 32px;
+}
+
+@media (max-width: 540px) {
+  .install-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}

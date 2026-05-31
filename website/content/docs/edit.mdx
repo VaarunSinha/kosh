@@ -1,0 +1,35 @@
+---
+title: kosh edit
+description: Replace the value of an existing secret.
+---
+
+## Overview
+
+`kosh edit` replaces the encrypted value of an existing secret. The key name and vault reference remain the same; only the ciphertext is updated.
+
+## Usage
+
+```bash
+kosh edit --key <NAME>
+```
+
+## Flags
+
+| Flag | Short | Description |
+|------|-------|-------------|
+| `--key <NAME>` | `-k` | Name of the secret to update |
+
+## Example
+
+```bash
+$ kosh edit --key DATABASE_URL
+Current value: [hidden]
+New value: [hidden]
+✓ Updated DATABASE_URL
+```
+
+## Notes
+
+- The vault reference (`kosh:ref:v1:...`) in your `.env` file will be updated to point to the new ciphertext.
+- Use `kosh rotate` if you want a new reference alongside a new value.
+- Changes are local until you `kosh sync --push`.

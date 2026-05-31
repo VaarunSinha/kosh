@@ -1,0 +1,49 @@
+---
+title: kosh list
+description: List all managed secrets in the current workspace and environment.
+---
+
+## Overview
+
+`kosh list` shows all secrets currently tracked by Kosh in the active workspace and environment.
+
+## Usage
+
+```bash
+kosh list [--json]
+```
+
+## Flags
+
+| Flag | Description |
+|------|-------------|
+| `--json` | Output in JSON format |
+
+## Examples
+
+### Default output
+
+```bash
+$ kosh list
+Workspace: default   Environment: production
+
+  DATABASE_URL   kosh:ref:v1:aGVsbG93b3JsZA==
+  API_SECRET     kosh:ref:v1:c2VjcmV0dmFsdWU=
+  STRIPE_KEY     kosh:ref:v1:c3RyaXBla2V5
+```
+
+### JSON output
+
+```bash
+$ kosh list --json
+[
+  { "key": "DATABASE_URL", "ref": "kosh:ref:v1:aGVsbG93b3JsZA==" },
+  { "key": "API_SECRET",   "ref": "kosh:ref:v1:c2VjcmV0dmFsdWU=" },
+  { "key": "STRIPE_KEY",   "ref": "kosh:ref:v1:c3RyaXBla2V5" }
+]
+```
+
+## Notes
+
+- `kosh list` never outputs plaintext values, only opaque references.
+- Use `--workspace` and `--env` flags to inspect other contexts.

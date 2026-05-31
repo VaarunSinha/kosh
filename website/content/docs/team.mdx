@@ -1,0 +1,83 @@
+---
+title: kosh team
+description: Manage workspace members, invite, grant environment access, and list roles.
+---
+
+## Overview
+
+The `kosh team` subcommands manage who has access to your workspace and which environments they can decrypt.
+
+## Subcommands
+
+### `kosh team invite`
+
+Add a new member to the workspace.
+
+```bash
+kosh team invite <uuid> [--role <role>]
+```
+
+**Flags**
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--role <role>` | `developer` | Role to assign to the new member |
+
+**Roles**
+
+| Role | Read | Write | Manage members |
+|------|------|-------|----------------|
+| `owner` | ✓ | ✓ | ✓ |
+| `admin` | ✓ | ✓ | ✓ |
+| `developer` | ✓ | ✓ | ✗ |
+| `readonly` | ✓ | ✗ | ✗ |
+| `ci` | ✓ | ✗ | ✗ |
+
+**Example**
+
+```bash
+$ kosh team invite 550e8400-e29b-41d4-a716-446655440000 --role developer
+✓ Invited member as developer
+```
+
+---
+
+### `kosh team grant-env`
+
+Share an environment key with a member so they can decrypt secrets in that environment.
+
+```bash
+kosh team grant-env <uuid>
+```
+
+**Example**
+
+```bash
+$ kosh team grant-env 550e8400-e29b-41d4-a716-446655440000
+✓ Granted production environment access
+```
+
+---
+
+### `kosh team list`
+
+List all workspace members and their roles.
+
+```bash
+kosh team list
+```
+
+**Example**
+
+```bash
+$ kosh team list
+UUID                                   Role        Joined
+550e8400-e29b-41d4-a716-446655440000   owner       2025-01-01
+6ba7b810-9dad-11d1-80b4-00c04fd430c8   developer   2025-06-15
+```
+
+## Notes
+
+- Only `owner` and `admin` roles can invite members or grant environment access.
+- `ci` is a read-only role intended for CI/CD pipelines, it cannot push secrets.
+- A member must have `grant-env` called for each environment they need to access.

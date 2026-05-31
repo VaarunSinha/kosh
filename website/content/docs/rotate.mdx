@@ -1,0 +1,43 @@
+---
+title: kosh rotate
+description: Rotate a secret, generate a new value and a new encrypted reference.
+---
+
+## Overview
+
+`kosh rotate` replaces a secret with a new value **and** issues a new vault reference. This is useful when a credential has been compromised or you want to enforce regular rotation.
+
+## Usage
+
+```bash
+kosh rotate --key <NAME>
+```
+
+## Flags
+
+| Flag | Short | Description |
+|------|-------|-------------|
+| `--key <NAME>` | `-k` | Name of the secret to rotate |
+
+## Example
+
+```bash
+$ kosh rotate --key STRIPE_KEY
+New value: [hidden]
+✓ Rotated STRIPE_KEY
+  Old ref: kosh:ref:v1:c3RyaXBla2V5
+  New ref: kosh:ref:v1:bmV3cmVma2V5
+```
+
+## Difference from `kosh edit`
+
+| | `kosh edit` | `kosh rotate` |
+|-|-------------|---------------|
+| Updates value | ✓ | ✓ |
+| Issues new reference | ✗ | ✓ |
+| Old ref still valid | ✓ | ✗ (invalidated) |
+
+## Notes
+
+- After rotation, the old reference is invalidated and cannot be decrypted.
+- Push changes to the server with `kosh sync --push` so teammates get the new reference.

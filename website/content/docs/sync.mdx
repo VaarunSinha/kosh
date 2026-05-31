@@ -1,0 +1,59 @@
+---
+title: kosh sync
+description: Reconcile local secrets with the Kosh server for team sharing.
+---
+
+## Overview
+
+`kosh sync` pushes or pulls encrypted secrets between your local vault and the Kosh server. Secrets remain encrypted in transit, the server never sees plaintext.
+
+## Usage
+
+```bash
+kosh sync [--push | --pull]
+```
+
+## Flags
+
+| Flag | Description |
+|------|-------------|
+| `--push` | Upload local secrets to the server |
+| `--pull` | Download secrets from the server to local |
+
+Without a flag, Kosh performs a two-way reconcile.
+
+## Examples
+
+### Push local changes to server
+
+```bash
+$ kosh sync --push
+✓ Pushed 3 secrets to server
+```
+
+### Pull team secrets from server
+
+```bash
+$ kosh sync --pull
+✓ Pulled 5 secrets from server
+  + REDIS_URL (new)
+  ~ DATABASE_URL (updated)
+```
+
+### Two-way sync
+
+```bash
+$ kosh sync
+✓ Synced, 2 pushed, 1 pulled
+```
+
+## Prerequisites
+
+- Must be authenticated: run `kosh login` first.
+- Must have the environment key for the target environment.
+- Role must be `developer` or above.
+
+## Notes
+
+- Only encrypted ciphertext is transmitted. Keys are never sent to the server.
+- Conflicts (same key updated locally and on server) are flagged for manual resolution.

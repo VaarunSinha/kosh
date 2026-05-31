@@ -1,0 +1,70 @@
+---
+title: kosh run
+description: Run a command with secrets injected into its environment. Output is automatically redacted.
+---
+
+## Overview
+
+`kosh run` is the core of Kosh's runtime protection. It:
+
+1. Decrypts secrets from the vault
+2. Injects them as environment variables into the child process
+3. Intercepts stdout and stderr, scrubbing any secret value before it reaches your terminal
+
+## Usage
+
+```bash
+kosh run [FLAGS] -- <command> [args...]
+```
+
+The `--` separator is required to distinguish Kosh flags from the command being run.
+
+## Flags
+
+| Flag | Description |
+|------|-------------|
+| `--dangerously-allow-blocked` | Allow running commands on the blocked-command list (requires sudo) |
+| `--dangerously-turn-off-redact` | Disable output redaction (requires sudo) |
+
+## Examples
+
+### Basic usage
+
+```bash
+kosh run -- node server.js
+kosh run -- python manage.py runserver
+kosh run -- docker compose up
+```
+
+### With env override
+
+```bash
+kosh run --env staging -- npm start
+```
+
+### With a blocked command (requires sudo)
+
+```bash
+sudo kosh run --dangerously-allow-blocked -- env
+```
+
+## Redaction
+
+Kosh's redactor scans every byte written to stdout and stderr. If a secret value appears in output, it is replaced with `[REDACTED]`.
+
+```
+$ kosh run -- node -e "console.log(process.env.API_SECRET)"
+[REDACTED]
+```
+
+This protects against accidental leaks in:
+- Application logs
+- Error messages
+- Debug output
+- Test output
+
+## Notes
+
+- The child process receives secrets as real environment variables, it has no awareness of Kosh.
+- Redaction is applied to the output stream, not the environment. The process itself has full plaintext access.
+- Use `--dangerously-turn-off-redact` only in trusted local environments where you need to inspect values.

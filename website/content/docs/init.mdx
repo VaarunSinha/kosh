@@ -1,0 +1,35 @@
+---
+title: kosh init
+description: Generate your user key and write the default Kosh configuration. Run once per machine.
+---
+
+## Overview
+
+`kosh init` is the first command you run on a new machine. It generates a user keypair and writes the default configuration to `~/.kosh/config.toml`.
+
+## Usage
+
+```bash
+kosh init
+```
+
+## What it does
+
+1. Generates an X25519 user keypair
+2. Derives an encryption key via Argon2id
+3. Writes `~/.kosh/config.toml` with default workspace and environment settings
+4. Stores the encrypted private key in the local keystore
+
+## Example
+
+```bash
+$ kosh init
+✓ Generated user key
+✓ Wrote ~/.kosh/config.toml
+```
+
+## Notes
+
+- Running `kosh init` on a machine where Kosh is already initialized will prompt you before overwriting.
+- Your private key never leaves your machine in plaintext.
+- To use team sync, you will need a server token, see [kosh login](/docs/login).

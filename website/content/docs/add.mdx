@@ -1,0 +1,63 @@
+---
+title: kosh add
+description: Encrypt a secret or all plain values in a .env file and store encrypted references.
+---
+
+## Overview
+
+`kosh add` encrypts secrets and stores opaque references in your `.env` file (or vault). The original plaintext is never written to disk.
+
+## Usage
+
+```bash
+# Encrypt all plain values in a .env file
+kosh add --file <path>
+
+# Encrypt a single secret (prompts for value)
+kosh add --key <NAME>
+```
+
+## Flags
+
+| Flag | Short | Description |
+|------|-------|-------------|
+| `--file <path>` | `-f` | Path to a `.env` file to process |
+| `--key <NAME>` | `-k` | Name of the secret to add (prompts for value) |
+
+## Examples
+
+### Encrypt an entire .env file
+
+```bash
+$ kosh add --file .env
+✓ Encrypted DATABASE_URL
+✓ Encrypted API_SECRET
+✓ Encrypted STRIPE_KEY
+Wrote 3 references to .env
+```
+
+Before:
+```bash
+DATABASE_URL=postgres://user:password@localhost/db
+API_SECRET=sk-super-secret-value
+```
+
+After:
+```bash
+DATABASE_URL=kosh:ref:v1:aGVsbG93b3JsZA==
+API_SECRET=kosh:ref:v1:c2VjcmV0dmFsdWU=
+```
+
+### Add a single secret
+
+```bash
+$ kosh add --key STRIPE_KEY
+Value: [hidden]
+✓ Encrypted STRIPE_KEY
+```
+
+## Notes
+
+- Values already containing a `kosh:ref:` prefix are skipped.
+- The original `.env` file is modified in place; backup it first if needed.
+- Use `kosh list` to verify stored secrets.

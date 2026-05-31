@@ -1,0 +1,61 @@
+---
+title: kosh login / logout
+description: Authenticate with a Kosh server for team sync.
+---
+
+## Overview
+
+`kosh login` stores server credentials locally so that `kosh sync` and team commands can communicate with the server. `kosh logout` revokes the local session token.
+
+---
+
+## kosh login
+
+```bash
+kosh login --server <url> --token <jwt>
+```
+
+### Flags
+
+| Flag | Description |
+|------|-------------|
+| `--server <url>` | Base URL of the Kosh server |
+| `--token <jwt>` | JWT issued by `kosh-server issue-token` |
+
+### Example
+
+```bash
+$ kosh login --server https://kosh.example.com --token eyJhbGciOiJI...
+✓ Authenticated with kosh.example.com
+```
+
+### Getting a token
+
+Ask your workspace owner to run:
+
+```bash
+kosh-server issue-token --user <your-uuid> [--ttl <seconds>]
+```
+
+---
+
+## kosh logout
+
+```bash
+kosh logout
+```
+
+Revokes the locally stored session token. Future sync operations will require `kosh login` again.
+
+### Example
+
+```bash
+$ kosh logout
+✓ Logged out from kosh.example.com
+```
+
+## Notes
+
+- The JWT is stored locally in `~/.kosh/credentials`, never committed to version control.
+- Token TTL is set by the server operator. Ask your owner for a token with an appropriate expiry for CI/CD.
+- Running `kosh logout` only invalidates the local token; the server may still consider it valid until it expires.

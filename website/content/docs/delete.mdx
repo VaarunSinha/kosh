@@ -1,0 +1,27 @@
+---
+title: kosh delete
+description: Remove a secret from the vault.
+---
+
+## Overview
+
+`kosh delete` removes a secret from the active workspace and environment. The vault reference is invalidated and the ciphertext is deleted.
+
+## Usage
+
+```bash
+kosh delete <NAME>
+```
+
+## Example
+
+```bash
+$ kosh delete OLD_API_KEY
+✓ Deleted OLD_API_KEY
+```
+
+## Notes
+
+- Deletion is **irreversible**. Once deleted, the plaintext cannot be recovered from the reference.
+- The `kosh:ref:` entry in your `.env` file is not automatically removed, update the file manually after deleting.
+- Push changes to the server with `kosh sync --push` to propagate the deletion to teammates.

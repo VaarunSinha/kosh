@@ -1,0 +1,20 @@
+{
+  "title": "Kosh Docs",
+  "pages": [
+    "index",
+    "---Getting Started---",
+    "init",
+    "---Core Commands---",
+    "add",
+    "list",
+    "run",
+    "edit",
+    "rotate",
+    "delete",
+    "status",
+    "---Team & Sync---",
+    "sync",
+    "team",
+    "login"
+  ]
+}
