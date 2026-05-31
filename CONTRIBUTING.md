@@ -6,7 +6,7 @@ Thank you for your interest in contributing. Kosh is a security-critical tool â€
 
 - Read the [README](./README.md) to understand what Kosh is and how it works.
 - Open an issue before starting significant work. This ensures the direction aligns with the project before you invest time.
-- For security issues, **do not open a public issue**. Email the maintainer directly (see profile).
+- For security issues, **do not open a public issue**. Email the maintainer directly: vaarunsinhha@gmail.com .
 
 ## Development setup
 
