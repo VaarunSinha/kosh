@@ -22,6 +22,14 @@ pub struct Args {
     pull: bool,
 }
 
+/// A resolved server environment: its workspace + environment ids and whether
+/// this invocation just created it.
+struct EnvRef {
+    ws: Uuid,
+    id: Uuid,
+    created: bool,
+}
+
 /// `kosh sync` — reconcile local secrets with the team server.
 ///
 /// The server is the source of truth: in the default (no-flag) mode we pull
@@ -36,7 +44,7 @@ pub async fn run(ctx: &Context, args: Args) -> anyhow::Result<()> {
     // Resolve the human-facing workspace/env names to server UUIDs, creating
     // them when absent (the caller becomes the owner of a new workspace).
     let ws_id = resolve_workspace(&client, &ctx.workspace).await?;
-    let env_id = resolve_env(&client, ws_id, &ctx.env).await?;
+    let (env_id, env_created) = resolve_env(&client, ws_id, &ctx.env).await?;
 
     // Publish our public key so teammates can wrap the env key to us (M5). PUT
     // is idempotent; the value is the age recipient string, base64 for transport.
@@ -45,8 +53,15 @@ pub async fn run(ctx: &Context, args: Args) -> anyhow::Result<()> {
     client.put_public_key(&pubkey_b64).await?;
 
     // Make sure we hold this env's key locally: unwrap it from the server if a
-    // teammate granted it, otherwise generate it (we are creating the env).
-    ensure_env_key(ctx, &kc, &client, ws_id, env_id, me, &user_id).await?;
+    // teammate granted it, otherwise generate it (only if we just created the
+    // env). An ungranted member proceeds without a key — they can still pull
+    // ciphertext, and decrypt once a teammate runs `kosh team grant-env`.
+    let envr = EnvRef {
+        ws: ws_id,
+        id: env_id,
+        created: env_created,
+    };
+    ensure_env_key(ctx, &kc, &client, &envr, me, &user_id).await?;
 
     let (do_push, do_pull) = match (args.push, args.pull) {
         (false, false) => (true, true),
@@ -80,20 +95,21 @@ pub(crate) async fn resolve_workspace(client: &ServerClient, name: &str) -> anyh
 }
 
 /// Find the environment by name within a workspace, creating it if absent.
+/// Returns `(id, created)` where `created` is true iff we created it just now.
 pub(crate) async fn resolve_env(
     client: &ServerClient,
     ws: Uuid,
     name: &str,
-) -> anyhow::Result<Uuid> {
+) -> anyhow::Result<(Uuid, bool)> {
     if let Some(e) = client
         .list_envs(ws)
         .await?
         .into_iter()
         .find(|e| e.name == name)
     {
-        return Ok(e.id);
+        return Ok((e.id, false));
     }
-    Ok(client.create_env(ws, name).await?.id)
+    Ok((client.create_env(ws, name).await?.id, true))
 }
 
 /// Guarantee a local env key for `(ctx.workspace, ctx.env)`.
@@ -101,15 +117,16 @@ pub(crate) async fn resolve_env(
 /// - If one is already stored locally, do nothing.
 /// - Else, if the server holds an env key wrapped to us, unwrap it with our user
 ///   identity and store it.
-/// - Else we are the env's creator: generate a fresh env keypair, migrate any
+/// - Else, if we just created this env, mint a fresh env keypair, migrate any
 ///   pre-existing solo (user-key) secrets to it, store it, and upload it wrapped
 ///   to our own public key.
+/// - Else (the env exists but no key has been granted to us yet) do nothing: we
+///   are an ungranted member and will decrypt once a teammate grants access.
 async fn ensure_env_key(
     ctx: &Context,
     kc: &Keychain,
     client: &ServerClient,
-    ws: Uuid,
-    env: Uuid,
+    envr: &EnvRef,
     me: Uuid,
     user_id: &Identity,
 ) -> anyhow::Result<()> {
@@ -117,7 +134,7 @@ async fn ensure_env_key(
         return Ok(());
     }
 
-    if let Some(dto) = client.get_env_key(ws, env, me).await? {
+    if let Some(dto) = client.get_env_key(envr.ws, envr.id, me).await? {
         let wrapped = STANDARD
             .decode(dto.encrypted_env_key.trim())
             .context("decoding wrapped env key")?;
@@ -130,7 +147,12 @@ async fn ensure_env_key(
         return Ok(());
     }
 
-    // Creating the env: mint its key.
+    if !envr.created {
+        // Existing env, no key granted to us yet — pull-only until granted.
+        return Ok(());
+    }
+
+    // We created the env: mint its key.
     let (env_identity, _env_recipient) = crypto::generate_keypair();
     let env_key_str = crypto::identity_to_string(&env_identity);
     migrate_secrets_to_env(ctx, kc, user_id, &env_identity)?;
@@ -142,7 +164,7 @@ async fn ensure_env_key(
         &user_id.to_public(),
     )?;
     client
-        .put_env_key(ws, env, me, &STANDARD.encode(&wrapped))
+        .put_env_key(envr.ws, envr.id, me, &STANDARD.encode(&wrapped))
         .await?;
     Ok(())
 }

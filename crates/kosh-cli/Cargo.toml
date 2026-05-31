@@ -33,3 +33,7 @@ tempfile = { workspace = true }
 reqwest = { workspace = true }
 testcontainers-modules = { workspace = true }
 tokio = { workspace = true }
+hex = { workspace = true }
+axum = { workspace = true }
+serde_json = { workspace = true }
+uuid = { workspace = true }

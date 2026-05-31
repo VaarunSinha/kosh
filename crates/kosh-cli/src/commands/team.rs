@@ -80,7 +80,7 @@ async fn grant_env(
     ws: Uuid,
     member: Uuid,
 ) -> anyhow::Result<()> {
-    let env_id = resolve_env(client, ws, &ctx.env).await?;
+    let (env_id, _created) = resolve_env(client, ws, &ctx.env).await?;
 
     let env_key_str = kc.get_env_key(&ctx.workspace, &ctx.env)?.ok_or_else(|| {
         anyhow!(
