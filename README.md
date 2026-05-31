@@ -264,4 +264,4 @@ The integration tests in `crates/kosh-cli/tests/sync_test.rs` spin up a real Pos
 
 ## License
 
-[Business Source License 1.1](LICENSE). Converts to Apache 2.0 four years after each release.
+See LICENSE File in Repo root.
