@@ -14,6 +14,17 @@ pub struct Args {
     /// The command (and its arguments) to run, after `--`
     #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
     command: Vec<String>,
+
+    /// Allow shells and env-dump commands (e.g. bash, env, printenv).
+    /// Must be run via sudo. Output is still redacted unless --no-redact
+    /// is also passed.
+    #[arg(long = "dangerously-allow-blocked")]
+    dangerously_allow_blocked: bool,
+
+    /// Disable real-time output redaction.
+    /// Secret values will appear in stdout/stderr as-is.
+    #[arg(long = "no-redact")]
+    no_redact: bool,
 }
 
 pub async fn run(ctx: &Context, args: Args) -> anyhow::Result<()> {
@@ -22,9 +33,14 @@ pub async fn run(ctx: &Context, args: Args) -> anyhow::Result<()> {
     }
     let cmd_str = args.command.join(" ");
 
-    // Security gate first: never touch .env or the keychain for a blocked command.
+    // Security gate: block shells and env-dump commands unless the caller
+    // explicitly opted out *and* is running as root (sudo).
     if kosh_redactor::is_blocked(&cmd_str) {
-        return Err(KoshError::BlockedCommand { cmd: cmd_str }.into());
+        if args.dangerously_allow_blocked {
+            require_sudo()?;
+        } else {
+            return Err(KoshError::BlockedCommand { cmd: cmd_str }.into());
+        }
     }
 
     // Resolve and decrypt the secrets referenced by the project .env.
@@ -47,7 +63,13 @@ pub async fn run(ctx: &Context, args: Args) -> anyhow::Result<()> {
         }
     }
 
-    let redactor = Arc::new(Redactor::new(&secrets).map_err(|_| KoshError::RedactorInitFailed)?);
+    let redactor = if args.no_redact {
+        None
+    } else {
+        Some(Arc::new(
+            Redactor::new(&secrets).map_err(|_| KoshError::RedactorInitFailed)?,
+        ))
+    };
 
     let mut command = tokio::process::Command::new(&args.command[0]);
     command
@@ -74,7 +96,10 @@ pub async fn run(ctx: &Context, args: Args) -> anyhow::Result<()> {
         tokio::spawn(async move {
             let mut lines = BufReader::new(stdout).lines();
             while let Ok(Some(line)) = lines.next_line().await {
-                println!("{}", red.redact_line(&line));
+                match &red {
+                    Some(r) => println!("{}", r.redact_line(&line)),
+                    None => println!("{line}"),
+                }
             }
         })
     };
@@ -83,7 +108,10 @@ pub async fn run(ctx: &Context, args: Args) -> anyhow::Result<()> {
         tokio::spawn(async move {
             let mut lines = BufReader::new(stderr).lines();
             while let Ok(Some(line)) = lines.next_line().await {
-                eprintln!("{}", red.redact_line(&line));
+                match &red {
+                    Some(r) => eprintln!("{}", r.redact_line(&line)),
+                    None => eprintln!("{line}"),
+                }
             }
         })
     };
@@ -93,4 +121,17 @@ pub async fn run(ctx: &Context, args: Args) -> anyhow::Result<()> {
     let _ = err_task.await;
 
     std::process::exit(status.code().unwrap_or(1));
+}
+
+/// Check that the process was launched via sudo (SUDO_UID is set by sudo on
+/// macOS and Linux). Used to gate `--dangerously-allow-blocked` — not a hard
+/// security boundary, but friction that forces a conscious decision.
+fn require_sudo() -> anyhow::Result<()> {
+    if std::env::var("SUDO_UID").is_ok() {
+        return Ok(());
+    }
+    anyhow::bail!(
+        "--dangerously-allow-blocked requires sudo:\n  \
+         sudo kosh run --dangerously-allow-blocked -- <command>"
+    )
 }

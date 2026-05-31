@@ -160,9 +160,25 @@ Global flags: `--workspace / -w`, `--env / -e`, `--json`.
 
 `kosh run` refuses to launch shells (`bash`, `sh`, `zsh`, `fish`, `dash`, `ksh`, `tcsh`, `csh`) or env-dump utilities (`env`, `printenv`, `export`, `set`). Patterns like `echo $VAR` and `echo ${VAR}` are also blocked. This prevents prompt injection or a malicious script from exfiltrating secrets by spawning a sub-shell.
 
+If you genuinely need to run a shell (e.g. a `bash` build script you own and trust), you can bypass the block — but only via sudo, as a forcing function for conscious intent. Output is still redacted unless you additionally pass `--no-redact`:
+
+```sh
+# Run a shell script — blocked commands allowed, output still redacted.
+sudo kosh run --dangerously-allow-blocked -- bash build.sh
+
+# Allow blocked commands AND skip redaction.
+sudo kosh run --dangerously-allow-blocked --no-redact -- bash build.sh
+```
+
 ### What is redacted
 
 For allowed commands, every line written to stdout or stderr is scanned against all known plaintext values before it reaches your terminal. Matches are replaced with `[REDACTED]`.
+
+Pass `--no-redact` to disable this (no sudo required — redaction is safety, not a security boundary):
+
+```sh
+kosh run --no-redact -- npm run dev
+```
 
 ### What the server never sees
 
@@ -214,7 +230,17 @@ export KOSH_JWT_SECRET="change-me-in-production"
 cargo run -p kosh-server
 ```
 
-Tokens are minted out-of-band (there is no password login). Use the server's admin tooling or the `mint_token` helper in `kosh_server::api::auth` to issue JWTs.
+Tokens are minted out-of-band — there is no password login. Use the `issue-token` subcommand on the server machine to create a JWT for a new user:
+
+```sh
+# Issue a token for a user (reads KOSH_JWT_SECRET from env).
+kosh-server issue-token --user <user-uuid>
+
+# Custom lifetime (e.g. 30 days for a CI token).
+kosh-server issue-token --user <user-uuid> --ttl 2592000
+```
+
+Hand the printed token to the user, who runs `kosh login --server <url> --token <token>`. The user UUID is any UUIDv4 you assign — kosh has no user registration; identity is the JWT `sub` claim.
 
 ---
 
