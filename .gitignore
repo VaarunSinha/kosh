@@ -1,2 +1,5 @@
 /target
 **/*.rs.bk
+.claude
+.DS_Store
+kosh-core.md
