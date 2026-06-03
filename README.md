@@ -6,7 +6,12 @@
 
 **कोष**
 
-Encrypted secret vault for developers and teams.
+Encrypted secret vault for developers and teams.<br/>
+Your secrets stay secret — even from AI.
+
+[![GitHub Release](https://img.shields.io/github/v/release/VaarunSinha/kosh?label=release&color=brightgreen)](https://github.com/VaarunSinha/kosh/releases/latest)
+[![Crates.io](https://img.shields.io/crates/v/kosh)](https://crates.io/crates/kosh)
+[![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue)](./LICENSE)
 
 [Website](https://kosh.useyukti.com) · [Docs](https://kosh.useyukti.com/docs) · [Install](#installation)
 
@@ -33,24 +38,60 @@ AI coding assistants read your terminal. That's useful until the output contains
 
 ## Installation
 
-Requires Rust 1.75 or later.
+### macOS
+
+**Homebrew** (recommended):
+
+```sh
+brew install VaarunSinha/kosh/kosh
+```
+
+> Tap: [github.com/VaarunSinha/homebrew-kosh](https://github.com/VaarunSinha/homebrew-kosh)
+
+**One-liner** (downloads prebuilt binary):
+
+```sh
+curl -fsSL https://kosh.useyukti.com/install.sh | sh
+```
+
+### Linux
+
+```sh
+curl -fsSL https://kosh.useyukti.com/install.sh | sh
+```
+
+Installs to `/usr/local/bin` (falls back to `~/.local/bin`). Supports x86\_64 and arm64. Binaries are statically linked (musl) — no libc dependency.
+
+### Windows
+
+**PowerShell** (installs to `%USERPROFILE%\.kosh\bin` and updates `PATH`):
+
+```powershell
+irm https://kosh.useyukti.com/install.ps1 | iex
+```
+
+**winget** _(coming soon)_
+
+### Using Cargo (all platforms)
+
+Requires Rust 1.75+.
 
 ```sh
 cargo install kosh
 ```
 
-Install the Claude Code skill:
-
-```sh
-npx skills add VaarunSinha/kosh
-```
-
-Build from source:
+### Build from source
 
 ```sh
 git clone https://github.com/VaarunSinha/kosh
 cd kosh
-cargo install --path crates/kosh-cli
+cargo install --locked --path crates/kosh-cli
+```
+
+### Claude Code skill
+
+```sh
+npx skills add VaarunSinha/kosh
 ```
 
 ## Quick start
