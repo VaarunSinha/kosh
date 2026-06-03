@@ -20,15 +20,14 @@ kosh sync --push        # share encrypted secrets with team
 
 ## Install
 
-```bash
-cargo install kosh
-```
+| Platform | Command |
+|----------|---------|
+| macOS / Linux | `curl -fsSL https://kosh.useyukti.com/install.sh \| sh` |
+| Homebrew | `brew install VaarunSinha/kosh/kosh` |
+| Windows | `irm https://kosh.useyukti.com/install.ps1 \| iex` |
+| Cargo | `cargo install kosh` |
 
-Or install the Claude Code skill:
-
-```bash
-npx skills add VaarunSinha/kosh
-```
+See [Installation](/docs/installation) for full platform instructions, build from source, and verify steps.
 
 ## Architecture
 
@@ -60,6 +59,7 @@ These flags work across all commands:
 
 ## Next steps
 
+- [Installation](/docs/installation), pick your platform
 - [kosh init](/docs/init), set up your machine
 - [kosh add](/docs/add), encrypt your first secret
 - [kosh run](/docs/run), run a command with injected secrets

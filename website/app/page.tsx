@@ -193,9 +193,16 @@ export default function HomePage() {
 
           {/* Install blocks */}
           <div className="install-grid">
-            <InstallBlock label="Install CLI" cmd="cargo install kosh" />
-            <InstallBlock label="Install skill" cmd="npx skills add VaarunSinha/kosh" />
+            <InstallBlock label="macOS / Linux" cmd="curl -fsSL https://kosh.useyukti.com/install.sh | sh" />
+            <InstallBlock label="Homebrew" cmd="brew install VaarunSinha/kosh/kosh" />
+            <InstallBlock label="Windows (PowerShell)" cmd="irm https://kosh.useyukti.com/install.ps1 | iex" />
+            <InstallBlock label="Cargo" cmd="cargo install kosh" />
           </div>
+          <p style={{ fontSize: "13px", color: "var(--text-muted)", marginBottom: "32px" }}>
+            <Link href="/docs/installation" style={{ color: "var(--accent)", textDecoration: "none" }}>
+              All installation methods →
+            </Link>
+          </p>
 
           {/* CTAs */}
           <div

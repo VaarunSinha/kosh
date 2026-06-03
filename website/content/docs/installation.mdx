@@ -1,0 +1,91 @@
+---
+title: Installation
+description: Install kosh on macOS, Linux, Windows, or build from source.
+---
+
+## macOS
+
+### Homebrew (recommended)
+
+```sh
+brew install VaarunSinha/kosh/kosh
+```
+
+Homebrew will auto-tap [`VaarunSinha/kosh`](https://github.com/VaarunSinha/homebrew-kosh) and install the latest release. Upgrades work with `brew upgrade kosh`.
+
+### One-liner
+
+```sh
+curl -fsSL https://kosh.useyukti.com/install.sh | sh
+```
+
+Downloads the prebuilt binary from [GitHub Releases](https://github.com/VaarunSinha/kosh/releases/latest) and installs to `/usr/local/bin`. Falls back to `~/.local/bin` if permissions require it.
+
+---
+
+## Linux
+
+```sh
+curl -fsSL https://kosh.useyukti.com/install.sh | sh
+```
+
+Supports **x86\_64** and **arm64**. Binaries are statically linked (musl libc) — no system dependencies required.
+
+Installs to `/usr/local/bin`. If that requires `sudo`, the script prompts for it; if that fails too, it falls back to `~/.local/bin`:
+
+```sh
+# Add to PATH if installed to ~/.local/bin
+export PATH="$HOME/.local/bin:$PATH"
+```
+
+---
+
+## Windows
+
+### PowerShell
+
+```powershell
+irm https://kosh.useyukti.com/install.ps1 | iex
+```
+
+Installs `kosh.exe` to `%USERPROFILE%\.kosh\bin` and adds it to your user `PATH` automatically. Restart your terminal after installing.
+
+---
+
+## Using Cargo
+
+If you have Rust 1.75+ installed:
+
+```sh
+cargo install kosh
+```
+
+Works on macOS, Linux, and Windows. This compiles from source — expect a few minutes on first install.
+
+---
+
+## Build from source
+
+```sh
+git clone https://github.com/VaarunSinha/kosh
+cd kosh
+cargo install --locked --path crates/kosh-cli
+```
+
+---
+
+## Verify installation
+
+```sh
+kosh --version
+```
+
+Then run `kosh init` to generate your user key and get started.
+
+---
+
+## Claude Code skill
+
+```sh
+npx skills add VaarunSinha/kosh
+```
