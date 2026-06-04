@@ -79,8 +79,29 @@ jobs:
           Compress-Archive -Path "target\${{ matrix.target }}\release\kosh.exe" -DestinationPath $Archive
           echo "ASSET=$Archive" >> $env:GITHUB_ENV
 
+      - name: Compute checksum (Unix)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          if command -v sha256sum >/dev/null 2>&1; then
+            sha256sum "${{ env.ASSET }}" | awk '{print $1}' > "${{ env.ASSET }}.sha256"
+          else
+            shasum -a 256 "${{ env.ASSET }}" | awk '{print $1}' > "${{ env.ASSET }}.sha256"
+          fi
+          echo "CHECKSUM_ASSET=${{ env.ASSET }}.sha256" >> "$GITHUB_ENV"
+
+      - name: Compute checksum (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $hash = (Get-FileHash -Path "$env:ASSET" -Algorithm SHA256).Hash.ToLower()
+          $hash | Out-File -FilePath "$env:ASSET.sha256" -Encoding ASCII -NoNewline
+          echo "CHECKSUM_ASSET=$env:ASSET.sha256" >> $env:GITHUB_ENV
+
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{ env.ASSET }}
+          files: |
+            ${{ env.ASSET }}
+            ${{ env.CHECKSUM_ASSET }}
           generate_release_notes: true

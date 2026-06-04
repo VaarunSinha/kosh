@@ -128,15 +128,22 @@ pub async fn run(ctx: &Context, args: Args) -> anyhow::Result<()> {
     std::process::exit(status.code().unwrap_or(1));
 }
 
-/// Check that the process was launched via sudo (SUDO_UID is set by sudo on
-/// macOS and Linux). Used to gate `--dangerously-allow-blocked` — not a hard
-/// security boundary, but friction that forces a conscious decision.
+/// Soft friction check intended to make dangerous flag use feel deliberate.
+///
+/// Checks for `SUDO_UID`, which is set by sudo on macOS/Linux. This is NOT a
+/// hard security boundary — any user can bypass it by setting the env var
+/// manually (`SUDO_UID=1 kosh run --dangerously-allow-blocked -- bash`).
+/// The real protection is output redaction; the blocked list and this check
+/// exist only as a speed-bump that forces a conscious decision.
 fn require_sudo() -> anyhow::Result<()> {
     if std::env::var("SUDO_UID").is_ok() {
         return Ok(());
     }
     anyhow::bail!(
-        "this flag requires sudo:\n  \
-         sudo kosh run <dangerous-flags> -- <command>"
+        "pass this flag via sudo as a deliberate acknowledgement that you are \
+         bypassing safety protections (output redaction remains active unless \
+         --dangerously-turn-off-redact is also passed):\n  \
+         sudo kosh run <dangerous-flags> -- <command>\n\n\
+         Note: this is a soft check, not a hard security boundary."
     )
 }

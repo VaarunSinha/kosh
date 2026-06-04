@@ -74,11 +74,34 @@ ARCHIVE_PATH="$TMP_DIR/$ARCHIVE"
 if command -v curl >/dev/null 2>&1; then
   curl -fsSL --retry 3 "$URL" -o "$ARCHIVE_PATH" \
     || err "Download failed — no release published yet? Try: cargo install kosh"
+  curl -fsSL --retry 3 "${URL}.sha256" -o "${ARCHIVE_PATH}.sha256" \
+    || err "Checksum file download failed."
 elif command -v wget >/dev/null 2>&1; then
   wget -q "$URL" -O "$ARCHIVE_PATH" \
     || err "Download failed — no release published yet? Try: cargo install kosh"
+  wget -q "${URL}.sha256" -O "${ARCHIVE_PATH}.sha256" \
+    || err "Checksum file download failed."
 else
   err "Neither curl nor wget found — install one and retry."
+fi
+
+# ---------------------------------------------------------------------------
+# Verify checksum
+# ---------------------------------------------------------------------------
+EXPECTED=$(cat "${ARCHIVE_PATH}.sha256")
+if command -v sha256sum >/dev/null 2>&1; then
+  ACTUAL=$(sha256sum "$ARCHIVE_PATH" | awk '{print $1}')
+elif command -v shasum >/dev/null 2>&1; then
+  ACTUAL=$(shasum -a 256 "$ARCHIVE_PATH" | awk '{print $1}')
+else
+  yellow "Warning: no sha256sum or shasum found — skipping checksum verification."
+  ACTUAL="$EXPECTED"
+fi
+
+if [ "$EXPECTED" != "$ACTUAL" ]; then
+  err "Checksum mismatch — download may be corrupted or tampered.
+  Expected: $EXPECTED
+  Got:      $ACTUAL"
 fi
 
 # ---------------------------------------------------------------------------

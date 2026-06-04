@@ -57,6 +57,22 @@ try {
     }
 
     # -------------------------------------------------------------------------
+    # Verify checksum
+    # -------------------------------------------------------------------------
+    $ChecksumUrl  = "$Url.sha256"
+    $ChecksumPath = "$ArchivePath.sha256"
+    try {
+        Invoke-WebRequest -Uri $ChecksumUrl -OutFile $ChecksumPath -UseBasicParsing
+    } catch {
+        Fail "Checksum file download failed: $_"
+    }
+    $Expected = (Get-Content $ChecksumPath -Raw).Trim().ToLower()
+    $Actual   = (Get-FileHash -Path $ArchivePath -Algorithm SHA256).Hash.ToLower()
+    if ($Expected -ne $Actual) {
+        Fail "Checksum mismatch — download may be corrupted or tampered.`n  Expected: $Expected`n  Got:      $Actual"
+    }
+
+    # -------------------------------------------------------------------------
     # Extract
     # -------------------------------------------------------------------------
     Expand-Archive -Path $ArchivePath -DestinationPath $TmpDir -Force

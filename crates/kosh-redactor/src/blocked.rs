@@ -1,5 +1,21 @@
 /// Commands that are blocked from running under `kosh run`.
 /// These can expose secrets via environment-variable dumping.
+///
+/// # Security note — this list is a UX hint, not a hard boundary
+///
+/// Blocking shells and `env`/`printenv` prevents the most common accidental
+/// exposure patterns, but it does NOT prevent a determined user (or a script)
+/// from leaking secrets through general-purpose interpreters:
+///
+/// ```text
+/// kosh run -- python3 -c "import os; print(os.environ)"
+/// kosh run -- node   -e "console.log(process.env)"
+/// kosh run -- ruby   -e "puts ENV.inspect"
+/// kosh run -- perl   -e "print $ENV{SECRET}"
+/// ```
+///
+/// **Real-time output redaction is the actual protection.** This block list
+/// exists only to reduce casual / accidental exposure. Never rely on it alone.
 const BLOCKED_EXECUTABLES: &[&str] = &[
     "bash", "sh", "zsh", "fish", "dash", "ksh", "tcsh", "csh", "env", "printenv", "export", "set",
 ];

@@ -19,7 +19,6 @@ sha2.workspace         = true
 rand.workspace         = true
 zeroize.workspace      = true
 keyring.workspace      = true
-dotenvy.workspace      = true
 uuid.workspace         = true
 hex.workspace          = true
 

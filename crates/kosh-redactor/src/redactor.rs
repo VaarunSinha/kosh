@@ -5,6 +5,14 @@ use aho_corasick::AhoCorasick;
 /// Scans a stream of bytes and replaces all known secret values
 /// with their `[KOSH:ref]` placeholder. Uses Aho-Corasick for
 /// multi-pattern matching in a single pass.
+///
+/// # Known limitation — line-boundary splits
+///
+/// When used via [`redact_line`] (the default in `kosh run`), each line is
+/// redacted independently. A secret value that is split across a newline
+/// (e.g. a multi-line PEM key, or a base64 blob containing `\n`) will NOT be
+/// fully redacted — only the portion on each line is matched. Use
+/// [`redact_bytes`] on a larger buffer if you need cross-line redaction.
 pub struct Redactor {
     automaton: AhoCorasick,
     replacements: Vec<String>, // parallel to patterns

@@ -10,9 +10,9 @@ resolver = "2"
 [workspace.package]
 version      = "0.1.0"
 edition      = "2021"
-authors      = ["Your Name <you@email.com>"]
-license      = "BSL-1.1"
-repository   = "https://github.com/yourusername/kosh"
+authors      = ["Vaarun Sinha <vaarun@nexshastra.tech>"]
+license      = "AGPL-3.0"
+repository   = "https://github.com/VaarunSinha/kosh"
 rust-version = "1.75"
 
 [workspace.dependencies]
@@ -38,8 +38,6 @@ rand         = { version = "0.8", features = ["getrandom"] }
 zeroize      = { version = "1", features = ["derive"] }
 # Keychain
 keyring      = "2"
-# .env parsing
-dotenvy      = "0.15"
 # UUID
 uuid         = { version = "1", features = ["v4", "serde"] }
 # Hex (used by reference.rs)

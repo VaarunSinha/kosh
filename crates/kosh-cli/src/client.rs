@@ -108,9 +108,14 @@ impl ServerClient {
         format!("{}{}", self.base_url, path)
     }
 
-    /// The caller's own user id, read from the JWT `sub` claim. The signature is
-    /// not verified here — the server is the authority; we only need to know
-    /// which member row (`/keys/{me}`) is ours. Errors if the token is malformed.
+    /// The caller's own user id, read from the JWT `sub` claim.
+    ///
+    /// The signature is NOT verified here — the server is the authority and
+    /// validates the JWT on every authenticated request. This method is used
+    /// only to identify which `/keys/{me}` row belongs to the current user so
+    /// that we know where to publish/retrieve our own public key. It MUST NOT
+    /// be used as a security decision (e.g. access-control checks). Errors if
+    /// the token is structurally malformed.
     pub fn user_id(&self) -> anyhow::Result<Uuid> {
         let payload = self
             .token
