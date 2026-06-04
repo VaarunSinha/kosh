@@ -2135,7 +2135,7 @@ dependencies = [
 
 [[package]]
 name = "kosh-cli"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "age",
  "anyhow",
@@ -2160,7 +2160,7 @@ dependencies = [
 
 [[package]]
 name = "kosh-core"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "age",
  "anyhow",
@@ -2184,7 +2184,7 @@ dependencies = [
 
 [[package]]
 name = "kosh-redactor"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "aho-corasick",
  "anyhow",
@@ -2195,7 +2195,7 @@ dependencies = [
 
 [[package]]
 name = "kosh-server"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "axum",
